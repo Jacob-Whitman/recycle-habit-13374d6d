@@ -139,6 +139,28 @@ export function useLogEntries() {
   return { entries: entries ?? [], weeklyTotal, logBatch };
 }
 
+/** All-time log entries for this user (for lifetime total). */
+export function useLifetimeEntries() {
+  const { user } = useAuth();
+
+  const { data: entries } = useQuery({
+    queryKey: ["log_entries_lifetime", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("log_entries")
+        .select("quantity")
+        .eq("user_id", user.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const lifetimeTotal = (entries ?? []).reduce((sum, e) => sum + e.quantity, 0);
+  return { lifetimeTotal };
+}
+
 export function useFriends() {
   const { user } = useAuth();
   const queryClient = useQueryClient();

@@ -29,12 +29,16 @@ export default function LogPage() {
   const [loggedSuccess, setLoggedSuccess] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Redirect to setup if not completed
+  // Require auth
   useEffect(() => {
+    if (!user) {
+      navigate("/");
+      return;
+    }
     if (profile && !profile.local_setup_completed) {
       navigate("/setup");
     }
-  }, [profile, navigate]);
+  }, [user, profile, navigate]);
 
   // Camera setup
   const startCamera = useCallback(async () => {
