@@ -6,12 +6,18 @@ const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
 /** Synthetic identifier for Supabase auth only; app is username-only, no email used. */
 const CANONICAL_DOMAIN = "recycle.bandit";
 
-function toUsernameError(err: { message: string }): string {
+function toUsernameError(err: { message: string }, isSignIn: boolean): string {
   const m = err.message.toLowerCase();
-  if (m.includes("already registered") || m.includes("already exists") || m.includes("already in use"))
-    return "That username is already taken.";
-  if (m.includes("invalid login") || m.includes("invalid credentials")) return "Wrong username or login code.";
-  if (m.includes("email")) return "That username is already taken or the login code is wrong.";
+  if (!isSignIn) {
+    if (m.includes("already registered") || m.includes("already exists") || m.includes("already in use"))
+      return "That username is already taken.";
+  }
+  if (m.includes("invalid login") || m.includes("invalid credentials"))
+    return "Wrong username or login code.";
+  if (m.includes("not confirmed") || m.includes("confirm your"))
+    return "Account not active yet. The app must have email confirmation turned off—check Supabase: Authentication → Providers → Email → disable “Confirm email”.";
+  if (m.includes("email"))
+    return "Wrong username or login code.";
   return "Something went wrong. Try again.";
 }
 
@@ -91,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     });
 
-    if (error) return { error: toUsernameError(error) };
+    if (error) return { error: toUsernameError(error, false) };
     if (!data.user) return { error: "Something went wrong. Try again." };
 
     // Ensure profile row exists (trigger may have run; upsert covers race or missing trigger)
@@ -118,7 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const authId = `${canonical}@${CANONICAL_DOMAIN}`;
     const { error } = await supabase.auth.signInWithPassword({ email: authId, password: code });
 
-    if (error) return { error: toUsernameError(error) };
+    if (error) return { error: toUsernameError(error, true) };
     return {};
   };
 

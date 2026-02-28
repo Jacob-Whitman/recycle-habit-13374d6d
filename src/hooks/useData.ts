@@ -182,18 +182,17 @@ export function useFriends() {
   const sendRequest = useMutation({
     mutationFn: async (friendCode: string) => {
       if (!user) throw new Error("Not authenticated");
-      // Find the user by friend code
-      const { data: friendProfile, error: findError } = await supabase
-        .from("profiles")
-        .select("user_id")
-        .eq("friend_code", friendCode)
-        .single();
-      if (findError || !friendProfile) throw new Error("Friend code not found");
-      if (friendProfile.user_id === user.id) throw new Error("Can't add yourself");
+      const code = friendCode.trim();
+      const { data: addresseeUserId, error: findError } = await supabase.rpc("get_user_id_by_friend_code", {
+        code,
+      });
+      if (findError) throw new Error("Friend code not found");
+      if (addresseeUserId == null) throw new Error("Friend code not found");
+      if (addresseeUserId === user.id) throw new Error("Can't add yourself");
 
       const { error } = await supabase.from("friend_relationships").insert({
         requester_id: user.id,
-        addressee_id: friendProfile.user_id,
+        addressee_id: addresseeUserId,
       });
       if (error) throw error;
     },

@@ -185,7 +185,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_id_by_friend_code: {
+        Args: { code: string };
+        Returns: string | null;
+      };
     }
     Enums: {
       [_ in never]: never
