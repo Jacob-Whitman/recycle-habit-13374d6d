@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile, useUserItemRules, useItemTypes } from "@/hooks/useData";
+import { fetchRecyclingRulesByZip, isZipCode, DEFAULT_LOCAL_GUIDELINES } from "@/lib/recyclingLookup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CheckCircle, Circle, HelpCircle, ArrowRight, ArrowLeft } from "lucide-react";
+import { CheckCircle, Circle, HelpCircle, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 import Bandit from "@/components/Bandit";
 
 const COMMON_ITEMS = ["plastic_bottle", "aluminum_can", "cardboard", "paper"];
@@ -24,6 +25,8 @@ export default function LocalSetupPage() {
   const [step, setStep] = useState(0);
   const [location, setLocation] = useState(profile?.location_label ?? "");
   const [streamMode, setStreamMode] = useState<string>(profile?.stream_mode ?? "single");
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [rulesFromZip, setRulesFromZip] = useState(false);
   const [itemRules, setItemRules] = useState<Record<string, string>>(() => {
     const map: Record<string, string> = {};
     rules.forEach((r) => (map[r.item_type_id] = r.rule));
@@ -44,6 +47,16 @@ export default function LocalSetupPage() {
   const handleNext = async () => {
     if (step === 0) {
       await updateProfile.mutateAsync({ location_label: location.trim() });
+      if (isZipCode(location)) {
+        setLookupLoading(true);
+        try {
+          const fetched = await fetchRecyclingRulesByZip(location);
+          setItemRules((prev) => ({ ...prev, ...fetched }));
+          setRulesFromZip(true);
+        } finally {
+          setLookupLoading(false);
+        }
+      }
       setStep(1);
     } else if (step === 1) {
       await updateProfile.mutateAsync({ stream_mode: streamMode });
@@ -97,16 +110,17 @@ export default function LocalSetupPage() {
         <div className="space-y-4 animate-slide-up">
           <div className="bg-accent/50 rounded-xl p-4 text-sm text-accent-foreground">
             <p className="font-semibold mb-1">🏠 Where do you recycle?</p>
-            <p className="text-xs text-muted-foreground">Rules vary by city. Enter your ZIP code or city name so we can help you recycle right.</p>
+            <p className="text-xs text-muted-foreground">Enter your ZIP code and we’ll look up what your local program accepts. You can also enter a city name and set rules manually.</p>
           </div>
           <div>
-            <Label htmlFor="location" className="font-semibold text-sm">Location</Label>
+            <Label htmlFor="location" className="font-semibold text-sm">ZIP code (or city)</Label>
             <Input
               id="location"
-              placeholder="e.g. 10001 or Brooklyn, NY"
+              placeholder="e.g. 19711 or Newark, DE"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               className="mt-1"
+              maxLength={10}
             />
           </div>
         </div>
@@ -141,7 +155,18 @@ export default function LocalSetupPage() {
         <div className="space-y-4 animate-slide-up">
           <div className="bg-accent/50 rounded-xl p-4 text-sm text-accent-foreground">
             <p className="font-semibold mb-1">♻️ What does YOUR program accept?</p>
-            <p className="text-xs text-muted-foreground">Set the common items first. You can edit the rest later.</p>
+            {rulesFromZip ? (
+              <>
+                <p className="text-xs text-muted-foreground mb-2">Pre-filled from your ZIP. Review and change any rule below.</p>
+                <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                  {DEFAULT_LOCAL_GUIDELINES.map((line, i) => (
+                    <li key={i}>{line}</li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">Set the common items first. You can edit the rest later.</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -188,9 +213,15 @@ export default function LocalSetupPage() {
         <Button
           className="flex-1 font-heading font-bold gap-1"
           onClick={handleNext}
-          disabled={!canProceed()}
+          disabled={!canProceed() || lookupLoading}
         >
-          {step === 3 ? "Start Recycling!" : "Continue"} <ArrowRight className="w-4 h-4" />
+          {lookupLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <>
+              {step === 3 ? "Start Recycling!" : "Continue"} <ArrowRight className="w-4 h-4" />
+            </>
+          )}
         </Button>
       </div>
     </div>
