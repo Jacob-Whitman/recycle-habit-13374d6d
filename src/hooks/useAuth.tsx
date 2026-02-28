@@ -11,6 +11,8 @@ function toUsernameError(err: { message: string }, isSignIn: boolean): string {
   if (!isSignIn) {
     if (m.includes("already registered") || m.includes("already exists") || m.includes("already in use"))
       return "That username is already taken.";
+    if (m.includes("weak_password") || m.includes("password"))
+      return "Signup was rejected (password policy). Try again.";
   }
   if (m.includes("invalid login") || m.includes("invalid credentials"))
     return "Wrong username or login code.";
@@ -22,11 +24,13 @@ function toUsernameError(err: { message: string }, isSignIn: boolean): string {
 }
 
 const WORDS = ["sun", "moon", "star", "leaf", "wave", "bird", "tree", "rain", "snow", "fire", "wind", "cloud", "seed", "path", "drop"];
+/** Generates a login code that satisfies Supabase password policy (min length, upper, lower, digit, symbol). */
 function generateLoginCode(): string {
   const w1 = WORDS[Math.floor(Math.random() * WORDS.length)];
   const w2 = WORDS[Math.floor(Math.random() * WORDS.length)];
   const n = Math.floor(10 + Math.random() * 90);
-  return `${w1}-${w2}-${n}`;
+  const capitalized = `${w1.charAt(0).toUpperCase() + w1.slice(1)}-${w2}-${n}!`;
+  return capitalized;
 }
 
 export function canonicalizeUsername(username: string): string {

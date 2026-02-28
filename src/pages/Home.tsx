@@ -214,7 +214,7 @@ export default function HomePage() {
               autoComplete="username"
             />
             <Input
-              placeholder="Login code (e.g. sun-leaf-42)"
+              placeholder="Login code (e.g. Sun-leaf-42!)"
               value={loginCode}
               onChange={(e) => setLoginCode(e.target.value)}
               type="password"

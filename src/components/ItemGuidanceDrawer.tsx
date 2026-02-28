@@ -1,15 +1,17 @@
 import { useItemTypes, useUserItemRules, useProfile } from "@/hooks/useData";
 import { Button } from "@/components/ui/button";
-import { X, Plus, AlertTriangle, Settings } from "lucide-react";
+import { X, Plus, CheckCircle, AlertTriangle, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
   itemId: string;
   onClose: () => void;
   onAddToBatch: (itemId: string) => void;
+  onMarkRecycled?: (itemId: string) => Promise<void>;
+  isLogging?: boolean;
 }
 
-export default function ItemGuidanceDrawer({ itemId, onClose, onAddToBatch }: Props) {
+export default function ItemGuidanceDrawer({ itemId, onClose, onAddToBatch, onMarkRecycled, isLogging }: Props) {
   const { data: itemTypes } = useItemTypes();
   const { rules, upsertRule } = useUserItemRules();
   const { profile } = useProfile();
@@ -37,6 +39,15 @@ export default function ItemGuidanceDrawer({ itemId, onClose, onAddToBatch }: Pr
       }
     }
     onAddToBatch(itemId);
+  };
+
+  const handleMarkRecycled = () => {
+    if (rule === "not_accepted") {
+      if (!window.confirm("This item is marked as NOT accepted in your local program. Mark as recycled anyway?")) {
+        return;
+      }
+    }
+    onMarkRecycled?.(itemId);
   };
 
   return (
@@ -110,19 +121,31 @@ export default function ItemGuidanceDrawer({ itemId, onClose, onAddToBatch }: Pr
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2">
-          <Button onClick={handleAdd} className="flex-1 font-heading font-bold gap-1">
-            <Plus className="w-4 h-4" /> Add to Batch
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => navigate("/setup")}
-            title="Edit local rule"
-            aria-label="Edit local rule"
-          >
-            <Settings className="w-4 h-4" />
-          </Button>
+        <div className="space-y-2">
+          {onMarkRecycled && (
+            <Button
+              onClick={handleMarkRecycled}
+              disabled={isLogging}
+              className="w-full font-heading font-bold gap-2 bg-primary"
+            >
+              <CheckCircle className="w-4 h-4" />
+              {isLogging ? "Saving…" : "Mark as recycled"}
+            </Button>
+          )}
+          <div className="flex gap-2">
+            <Button onClick={handleAdd} variant={onMarkRecycled ? "outline" : "default"} className="flex-1 font-heading font-bold gap-1">
+              <Plus className="w-4 h-4" /> Add to Batch
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => navigate("/setup")}
+              title="Edit local rule"
+              aria-label="Edit local rule"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

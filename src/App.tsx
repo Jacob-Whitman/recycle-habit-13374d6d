@@ -1,9 +1,11 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { verifyDatabase } from "@/integrations/supabase/verifyDb";
 import Home from "./pages/Home";
 import LogPage from "./pages/Log";
 import LocalSetupPage from "./pages/LocalSetup";
@@ -12,7 +14,18 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    verifyDatabase().then((result) => {
+      if (result.ok) {
+        console.log("[Supabase]", result.message, result.details ?? "");
+      } else {
+        console.warn("[Supabase]", result.message, result.details ?? "");
+      }
+    });
+  }, []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
@@ -30,6 +43,7 @@ const App = () => (
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
