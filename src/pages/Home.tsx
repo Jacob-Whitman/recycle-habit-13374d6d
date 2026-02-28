@@ -11,7 +11,7 @@ const WHY_IT_MATTERS = [
   { icon: "🌍", title: "Save the Planet", text: "Recycling reduces landfill waste and conserves natural resources for future generations." },
   { icon: "💧", title: "Save Water & Energy", text: "Recycling aluminum cans saves 95% of the energy needed to make new ones." },
   { icon: "🌱", title: "Reduce Emissions", text: "Proper recycling keeps harmful materials out of our air and waterways." },
-  { icon: "🤝", title: "Build Community", text: "Recycle with friends and inspire your neighborhood to do better." },
+  { icon: "🤝", title: "Build Community", text: "Recycle with friends and influence your neighborhood to do better." },
 ];
 
 export default function HomePage() {
