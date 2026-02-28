@@ -1,8 +1,7 @@
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [main, master]
+  push:  # runs on every git push (any branch)
 
 permissions:
   contents: read
