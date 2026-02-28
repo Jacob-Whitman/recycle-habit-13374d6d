@@ -1,31 +1,85 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useData";
 import { useLogEntries } from "@/hooks/useData";
 import Bandit from "@/components/Bandit";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Recycle, BarChart3, LogIn } from "lucide-react";
 import heroBg from "@/assets/hero-bg.png";
+import { toast } from "sonner";
 
 const WHY_IT_MATTERS = [
   { icon: "🌍", title: "Save the Planet", text: "Recycling reduces landfill waste and conserves natural resources for future generations." },
   { icon: "💧", title: "Save Water & Energy", text: "Recycling aluminum cans saves 95% of the energy needed to make new ones." },
   { icon: "🌱", title: "Reduce Emissions", text: "Proper recycling keeps harmful materials out of our air and waterways." },
-  { icon: "🤝", title: "Build Community", text: "Recycle with friends and inspire your neighborhood to do better." },
+  { icon: "🤝", title: "Build Community", text: "Recycle with friends and influence your neighborhood to do better." },
 ];
 
 export default function HomePage() {
-  const { user, signInWithGoogle } = useAuth();
+  const { user, signUpWithUsername, signInWithUsernameAndCode, loginCodeToShow, dismissLoginCode } = useAuth();
   const { profile, updateProfile } = useProfile();
   const { weeklyTotal } = useLogEntries();
   const navigate = useNavigate();
 
+  const [username, setUsername] = useState("");
+  const [continuePending, setContinuePending] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginCode, setLoginCode] = useState("");
+  const [loginPending, setLoginPending] = useState(false);
+
+  const handleContinue = async () => {
+    if (!username.trim()) return;
+    setContinuePending(true);
+    const { error } = await signUpWithUsername(username);
+    setContinuePending(false);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    setUsername("");
+  };
+
+  const handleLogin = async () => {
+    if (!loginUsername.trim() || !loginCode.trim()) {
+      toast.error("Enter username and login code");
+      return;
+    }
+    setLoginPending(true);
+    const { error } = await signInWithUsernameAndCode(loginUsername, loginCode);
+    setLoginPending(false);
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    setShowLogin(false);
+    setLoginUsername("");
+    setLoginCode("");
+  };
+
   const handleNavWithAuth = (path: string) => {
     if (!user) {
-      signInWithGoogle();
+<<<<<<< HEAD
+      navigate(path);
+     // signInWithGoogle();
     } else {
       navigate(path);
+=======
+      toast.info("Choose a username first to continue");
+      return;
+>>>>>>> 439762c17704d0bc516b1d245f89a255fbe42e93
     }
+    navigate(path);
   };
 
   return (
@@ -52,41 +106,62 @@ export default function HomePage() {
             Log your recycling, track your impact, compete with friends.
           </p>
 
-          {user && (
-            <div className="bg-primary-foreground/15 backdrop-blur-sm rounded-xl px-4 py-3 mt-4 inline-block">
-              <p className="text-xs font-semibold uppercase tracking-wide opacity-80">This Week</p>
-              <p className="text-4xl font-black">{weeklyTotal}</p>
-              <p className="text-xs opacity-80">items recycled</p>
-            </div>
-          )}
+          {!user ? (
+            <>
+              <div className="mt-4 space-y-2">
+                <Input
+                  placeholder="Choose a username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleContinue()}
+                  className="bg-primary-foreground/15 border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/60 max-w-xs mx-auto font-medium"
+                  maxLength={20}
+                  aria-label="Choose a username"
+                />
+                <Button
+                  size="lg"
+                  className="font-heading font-bold shadow-warm gap-2"
+                  onClick={handleContinue}
+                  disabled={continuePending || !username.trim()}
+                >
+                  {continuePending ? "Creating…" : "Continue"}
+                </Button>
+              </div>
+              <Button
+                variant="ghost"
+                className="mt-3 text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 gap-2 text-sm"
+                onClick={() => setShowLogin(true)}
+              >
+                <LogIn className="w-4 h-4" /> Already have an account? Log in
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="bg-primary-foreground/15 backdrop-blur-sm rounded-xl px-4 py-3 mt-4 inline-block">
+                <p className="text-xs font-semibold uppercase tracking-wide opacity-80">This Week</p>
+                <p className="text-4xl font-black">{weeklyTotal}</p>
+                <p className="text-xs opacity-80">items recycled</p>
+              </div>
 
-          <div className="flex gap-3 justify-center mt-6">
-            <Button
-              size="lg"
-              variant="secondary"
-              className="font-heading font-bold text-base shadow-warm gap-2"
-              onClick={() => handleNavWithAuth("/log")}
-            >
-              <Recycle className="w-5 h-5" /> Recycle
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="font-heading font-bold text-base bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 gap-2"
-              onClick={() => handleNavWithAuth("/stats")}
-            >
-              <BarChart3 className="w-5 h-5" /> Stats
-            </Button>
-          </div>
-
-          {!user && (
-            <Button
-              variant="ghost"
-              className="mt-4 text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 gap-2"
-              onClick={signInWithGoogle}
-            >
-              <LogIn className="w-4 h-4" /> Sign in with Google
-            </Button>
+              <div className="flex gap-3 justify-center mt-6">
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="font-heading font-bold text-base shadow-warm gap-2"
+                  onClick={() => handleNavWithAuth("/log")}
+                >
+                  <Recycle className="w-5 h-5" /> Recycle
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="font-heading font-bold text-base bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 gap-2"
+                  onClick={() => handleNavWithAuth("/stats")}
+                >
+                  <BarChart3 className="w-5 h-5" /> Stats
+                </Button>
+              </div>
+            </>
           )}
         </div>
       </section>
@@ -112,6 +187,53 @@ export default function HomePage() {
 
       {/* Bottom nav */}
       {user && <BottomNav />}
+
+      {/* Login code shown once after signup */}
+      <Dialog open={!!loginCodeToShow} onOpenChange={(open) => !open && dismissLoginCode()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Save your login code</DialogTitle>
+            <DialogDescription>
+              You’ll need this to log in on another device. Use your username and this code.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-lg bg-muted p-4 font-mono text-lg font-bold text-center tracking-wider">
+            {loginCodeToShow}
+          </div>
+          <DialogFooter>
+            <Button onClick={dismissLoginCode}>Got it</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Log in (username + code) */}
+      <Dialog open={showLogin} onOpenChange={setShowLogin}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Log in</DialogTitle>
+            <DialogDescription>Enter your username and the login code you saved when you signed up.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              placeholder="Username"
+              value={loginUsername}
+              onChange={(e) => setLoginUsername(e.target.value)}
+              autoComplete="username"
+            />
+            <Input
+              placeholder="Login code (e.g. sun-leaf-42)"
+              value={loginCode}
+              onChange={(e) => setLoginCode(e.target.value)}
+              type="password"
+              autoComplete="off"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowLogin(false)}>Cancel</Button>
+            <Button onClick={handleLogin} disabled={loginPending}>Log in</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -135,9 +257,9 @@ export function BottomNav() {
             onClick={() => navigate(item.path)}
             className={`flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-lg transition-colors
               ${location === item.path
-                ? "text-primary font-bold"
-                : "text-muted-foreground hover:text-foreground"
-              }`}
+              ? "text-primary font-bold"
+              : "text-muted-foreground hover:text-foreground"
+            }`}
             aria-label={item.label}
           >
             <span className="text-xl">{item.icon}</span>

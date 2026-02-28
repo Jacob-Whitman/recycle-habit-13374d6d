@@ -29,7 +29,8 @@ export default function Bandit({ hatId = "none", size = "md", className = "", sh
   const hatSizeClasses = {
     sm: "text-xl -top-2",
     md: "text-3xl -top-3",
-    lg: "text-5xl -top-5",
+    // make the large hat sit slightly lower so it appears on his head
+    lg: "text-5xl -top-4",
   };
 
   const hat = HATS[hatId] || HATS.none;
@@ -43,7 +44,10 @@ export default function Bandit({ hatId = "none", size = "md", className = "", sh
           className={`${sizeClasses[size]} object-contain drop-shadow-lg`}
         />
         {hat.emoji && (
-          <span className={`absolute left-1/2 -translate-x-1/2 ${hatSizeClasses[size]} animate-bounce-in`}>
+          <span
+            className={`absolute left-1/2 -translate-x-1/2 ${hatSizeClasses[size]} animate-bounce-in`}
+            style={hat.cssStyle}
+          >
             {hat.emoji}
           </span>
         )}

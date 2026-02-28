@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { useProfile, useUserItemRules, useItemTypes } from "@/hooks/useData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,12 @@ const COMMON_ITEMS = ["plastic_bottle", "aluminum_can", "cardboard", "paper"];
 
 export default function LocalSetupPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
+
+  useEffect(() => {
+    if (!user) navigate("/");
+  }, [user, navigate]);
   const { upsertRule, rules } = useUserItemRules();
   const { data: itemTypes } = useItemTypes();
   const [step, setStep] = useState(0);
