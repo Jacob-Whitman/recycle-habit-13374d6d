@@ -16,6 +16,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: recycle-habit-13374d6d  # remove if repo root is the app folder
     steps:
       - uses: actions/checkout@v4
 
@@ -24,6 +27,7 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
+          cache-dependency-path: recycle-habit-13374d6d/package-lock.json  # remove if repo root is the app folder
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -42,7 +46,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: dist
+          path: recycle-habit-13374d6d/dist
 
   deploy:
     environment:
