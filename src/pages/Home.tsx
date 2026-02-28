@@ -187,7 +187,7 @@ export default function HomePage() {
           <DialogHeader>
             <DialogTitle>Save your login code</DialogTitle>
             <DialogDescription>
-              You’ll need this to log in on another device. We don’t use email—just your username and this code.
+              You’ll need this to log in on another device. Use your username and this code.
             </DialogDescription>
           </DialogHeader>
           <div className="rounded-lg bg-muted p-4 font-mono text-lg font-bold text-center tracking-wider">

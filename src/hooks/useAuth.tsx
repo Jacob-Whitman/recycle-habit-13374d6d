@@ -3,7 +3,17 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/;
+/** Synthetic identifier for Supabase auth only; app is username-only, no email used. */
 const CANONICAL_DOMAIN = "recycle.bandit";
+
+function toUsernameError(err: { message: string }): string {
+  const m = err.message.toLowerCase();
+  if (m.includes("already registered") || m.includes("already exists") || m.includes("already in use"))
+    return "That username is already taken.";
+  if (m.includes("invalid login") || m.includes("invalid credentials")) return "Wrong username or login code.";
+  if (m.includes("email")) return "That username is already taken or the login code is wrong.";
+  return "Something went wrong. Try again.";
+}
 
 const WORDS = ["sun", "moon", "star", "leaf", "wave", "bird", "tree", "rain", "snow", "fire", "wind", "cloud", "seed", "path", "drop"];
 function generateLoginCode(): string {
@@ -71,21 +81,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (canonical.length < 3) return { error: "Username too short after formatting" };
 
     const code = generateLoginCode();
-    const email = `${canonical}@${CANONICAL_DOMAIN}`;
+    const authId = `${canonical}@${CANONICAL_DOMAIN}`;
 
     const { error } = await supabase.auth.signUp({
-      email,
+      email: authId,
       password: code,
       options: {
         data: { full_name: username.trim() },
       },
     });
 
-    if (error) {
-      if (error.message.includes("already registered") || error.message.includes("already exists"))
-        return { error: "That username is already taken" };
-      return { error: error.message };
-    }
+    if (error) return { error: toUsernameError(error) };
 
     setLoginCodeToShow(code);
     return {};
@@ -96,15 +102,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     code: string
   ): Promise<{ error?: string }> => {
     const canonical = canonicalizeUsername(username.trim());
-    if (canonical.length < 3) return { error: "Invalid username" };
+    if (canonical.length < 3) return { error: "Invalid username." };
 
-    const email = `${canonical}@${CANONICAL_DOMAIN}`;
-    const { error } = await supabase.auth.signInWithPassword({ email, password: code });
+    const authId = `${canonical}@${CANONICAL_DOMAIN}`;
+    const { error } = await supabase.auth.signInWithPassword({ email: authId, password: code });
 
-    if (error) {
-      if (error.message.includes("Invalid login")) return { error: "Wrong username or login code" };
-      return { error: error.message };
-    }
+    if (error) return { error: toUsernameError(error) };
     return {};
   };
 
