@@ -69,15 +69,8 @@ export default function HomePage() {
 
   const handleNavWithAuth = (path: string) => {
     if (!user) {
-<<<<<<< HEAD
-      navigate(path);
-     // signInWithGoogle();
-    } else {
-      navigate(path);
-=======
       toast.info("Choose a username first to continue");
       return;
->>>>>>> 439762c17704d0bc516b1d245f89a255fbe42e93
     }
     navigate(path);
   };
