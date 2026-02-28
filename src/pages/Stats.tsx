@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile, useLogEntries, useFriends } from "@/hooks/useData";
+import { useProfile, useLogEntries, useLifetimeEntries, useFriends } from "@/hooks/useData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,38 +15,37 @@ export default function StatsPage() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { profile, updateProfile } = useProfile();
-  const { weeklyTotal, entries } = useLogEntries();
+  const { weeklyTotal } = useLogEntries();
+  const { lifetimeTotal } = useLifetimeEntries();
   const { accepted, pendingIncoming, sendRequest, respondToRequest } = useFriends();
   const [friendCode, setFriendCode] = useState("");
   const [friendProfiles, setFriendProfiles] = useState<Record<string, any>>({});
   const [friendTotals, setFriendTotals] = useState<Record<string, number>>({});
 
-  // Load friend data
-  const loadFriendData = async () => {
-    if (!user) return;
-    for (const rel of accepted) {
-      const friendId = rel.requester_id === user.id ? rel.addressee_id : rel.requester_id;
-      // Get profile
-      const { data: fp } = await supabase.from("profiles").select("*").eq("user_id", friendId).single();
-      if (fp) setFriendProfiles((prev) => ({ ...prev, [friendId]: fp }));
-      // Get 7-day total
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { data: logs } = await supabase
-        .from("log_entries")
-        .select("quantity")
-        .eq("user_id", friendId)
-        .gte("created_at", sevenDaysAgo);
-      const total = (logs ?? []).reduce((s, l) => s + l.quantity, 0);
-      setFriendTotals((prev) => ({ ...prev, [friendId]: total }));
-    }
-  };
+  useEffect(() => {
+    if (!user) navigate("/");
+  }, [user, navigate]);
 
-  // Load friend data on mount
-  useState(() => {
-    loadFriendData();
-  });
-
-  const lifetimeTotal = entries.reduce((s, e) => s + e.quantity, 0); // This is only 7-day from hook but okay for MVP
+  // Load friend data (username, rolling 7-day total, Bandit hat)
+  useEffect(() => {
+    if (!user || accepted.length === 0) return;
+    const load = async () => {
+      for (const rel of accepted) {
+        const friendId = rel.requester_id === user.id ? rel.addressee_id : rel.requester_id;
+        const { data: fp } = await supabase.from("profiles").select("*").eq("user_id", friendId).single();
+        if (fp) setFriendProfiles((prev) => ({ ...prev, [friendId]: fp }));
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const { data: logs } = await supabase
+          .from("log_entries")
+          .select("quantity")
+          .eq("user_id", friendId)
+          .gte("created_at", sevenDaysAgo);
+        const total = (logs ?? []).reduce((s, l) => s + l.quantity, 0);
+        setFriendTotals((prev) => ({ ...prev, [friendId]: total }));
+      }
+    };
+    load();
+  }, [user?.id, accepted]);
 
   const copyCode = () => {
     if (profile?.friend_code) {
@@ -93,26 +92,19 @@ export default function StatsPage() {
           </TabsList>
 
           <TabsContent value="stats" className="mt-4 space-y-4">
-            {/* Profile card */}
+            {/* Personal stats: username, rolling 7-day, lifetime, Bandit */}
             <div className="bg-card rounded-2xl p-5 text-center shadow-sm">
-              {profile?.profile_photo_url && (
-                <img
-                  src={profile.profile_photo_url}
-                  alt={profile.display_name ?? "Profile"}
-                  className="w-16 h-16 rounded-full mx-auto mb-3 border-2 border-primary"
-                />
-              )}
               <h2 className="font-heading text-lg font-bold">{profile?.display_name ?? "Recycler"}</h2>
               <p className="text-xs text-muted-foreground">{profile?.location_label}</p>
 
               <div className="flex justify-center gap-6 mt-4">
                 <div>
                   <p className="text-3xl font-black text-primary">{weeklyTotal}</p>
-                  <p className="text-[10px] text-muted-foreground font-semibold">This Week</p>
+                  <p className="text-[10px] text-muted-foreground font-semibold">Rolling 7-day</p>
                 </div>
                 <div>
                   <p className="text-3xl font-black text-secondary">{lifetimeTotal}</p>
-                  <p className="text-[10px] text-muted-foreground font-semibold">All Time*</p>
+                  <p className="text-[10px] text-muted-foreground font-semibold">Lifetime</p>
                 </div>
               </div>
 
@@ -207,12 +199,9 @@ export default function StatsPage() {
                   const total = friendTotals[friendId] ?? 0;
                   return (
                     <div key={rel.id} className="bg-card rounded-xl px-4 py-3 flex items-center gap-3">
-                      {fp?.profile_photo_url && (
-                        <img src={fp.profile_photo_url} alt="" className="w-8 h-8 rounded-full" />
-                      )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold truncate">{fp?.display_name ?? "Friend"}</p>
-                        <p className="text-xs text-muted-foreground">{total} items this week</p>
+                        <p className="text-xs text-muted-foreground">{total} items (rolling 7-day)</p>
                       </div>
                       <Bandit hatId={fp?.bandit_hat_id ?? "none"} size="sm" />
                     </div>
