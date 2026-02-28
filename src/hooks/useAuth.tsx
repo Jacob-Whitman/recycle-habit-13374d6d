@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const code = generateLoginCode();
     const authId = `${canonical}@${CANONICAL_DOMAIN}`;
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: authId,
       password: code,
       options: {
@@ -92,6 +92,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     if (error) return { error: toUsernameError(error) };
+    if (!data.user) return { error: "Something went wrong. Try again." };
+
+    // Ensure profile row exists (trigger may have run; upsert covers race or missing trigger)
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .upsert(
+        { user_id: data.user.id, display_name: username.trim() },
+        { onConflict: "user_id" }
+      );
+
+    if (profileError) return { error: "Account created but profile setup failed. Try logging in." };
 
     setLoginCodeToShow(code);
     return {};
