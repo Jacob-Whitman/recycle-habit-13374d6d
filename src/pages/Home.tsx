@@ -22,7 +22,8 @@ export default function HomePage() {
 
   const handleNavWithAuth = (path: string) => {
     if (!user) {
-      signInWithGoogle();
+      navigate(path);
+     // signInWithGoogle();
     } else {
       navigate(path);
     }

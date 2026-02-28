@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile, useLogEntries, useFriends } from "@/hooks/useData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Bandit from "@/components/Bandit";
+// note: carousel will now render hat images directly rather than using the Bandit component
+import tophatImg from "@/assets/hats/tophat.png";
+import partyImg from "@/assets/hats/party.png";
+import crownImg from "@/assets/hats/crown.png";
+import cowboyImg from "@/assets/hats/cowboy.png";
 import { BottomNav } from "@/pages/Home";
-import { Copy, UserPlus, Check, X, Settings, LogOut, ArrowLeft, Trash2 } from "lucide-react";
+import { Copy, UserPlus, Check, X, Settings, LogOut, ArrowLeft, ArrowRight, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,6 +19,45 @@ export default function StatsPage() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { profile, updateProfile } = useProfile();
+
+  // list of available hat images; id string is what gets stored in the profile
+  const HAT_IMAGES = [
+    { id: "tophat", label: "Top Hat", src: tophatImg },
+    { id: "party", label: "Party Hat", src: partyImg },
+    { id: "crown", label: "Crown", src: crownImg },
+    { id: "cowboy", label: "Cowboy", src: cowboyImg },
+  ];
+
+  const [hatIndex, setHatIndex] = useState(0);
+
+  // sync index when profile loads
+  useEffect(() => {
+    if (profile?.bandit_hat_id) {
+      const idx = HAT_IMAGES.findIndex((h) => h.id === profile.bandit_hat_id);
+      setHatIndex(idx >= 0 ? idx : 0);
+    }
+  }, [profile]);
+
+  const changeHat = useCallback(
+    (delta: number) => {
+      if (!profile) return;
+      const next = (hatIndex + delta + HAT_IMAGES.length) % HAT_IMAGES.length;
+      setHatIndex(next);
+      const newHat = HAT_IMAGES[next].id;
+      updateProfile.mutate({ bandit_hat_id: newHat });
+    },
+    [hatIndex, profile, updateProfile]
+  );
+
+  // listen for arrow key presses
+  useEffect(() => {
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") changeHat(-1);
+      if (e.key === "ArrowRight") changeHat(1);
+    };
+    window.addEventListener("keydown", keyHandler);
+    return () => window.removeEventListener("keydown", keyHandler);
+  }, [changeHat]);
   const { weeklyTotal, entries } = useLogEntries();
   const { accepted, pendingIncoming, sendRequest, respondToRequest } = useFriends();
   const [friendCode, setFriendCode] = useState("");
@@ -94,35 +137,74 @@ export default function StatsPage() {
 
           <TabsContent value="stats" className="mt-4 space-y-4">
             {/* Profile card */}
-            <div className="bg-card rounded-2xl p-5 text-center shadow-sm">
-              {profile?.profile_photo_url && (
-                <img
-                  src={profile.profile_photo_url}
-                  alt={profile.display_name ?? "Profile"}
-                  className="w-16 h-16 rounded-full mx-auto mb-3 border-2 border-primary"
-                />
-              )}
-              <h2 className="font-heading text-lg font-bold">{profile?.display_name ?? "Recycler"}</h2>
-              <p className="text-xs text-muted-foreground">{profile?.location_label}</p>
+            {/* profile card with side bandit and carousel controls */}
+            <div className="bg-card rounded-2xl p-5 shadow-sm">
+              <div className="flex flex-col md:flex-row items-center">
+                <div className="flex-1 text-center md:text-left">
+                  {profile?.profile_photo_url && (
+                    <img
+                      src={profile.profile_photo_url}
+                      alt={profile.display_name ?? "Profile"}
+                      className="w-16 h-16 rounded-full mx-auto md:mx-0 mb-3 border-2 border-primary"
+                    />
+                  )}
+                  <h2 className="font-heading text-lg font-bold">
+                    {profile?.display_name ?? "Recycler"}
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    {profile?.location_label}
+                  </p>
 
-              <div className="flex justify-center gap-6 mt-4">
-                <div>
-                  <p className="text-3xl font-black text-primary">{weeklyTotal}</p>
-                  <p className="text-[10px] text-muted-foreground font-semibold">This Week</p>
+                  <div className="flex justify-center md:justify-start gap-6 mt-4">
+                    <div>
+                      <p className="text-3xl font-black text-primary">
+                        {weeklyTotal}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground font-semibold">
+                        This Week
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-3xl font-black text-secondary">
+                        {lifetimeTotal}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground font-semibold">
+                        All Time*
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-3xl font-black text-secondary">{lifetimeTotal}</p>
-                  <p className="text-[10px] text-muted-foreground font-semibold">All Time*</p>
+
+                {/* side bandit with hat slideshow */}
+                <div className="mt-6 md:mt-0 md:ml-6 flex flex-col items-center">
+                  <div className="flex items-center">
+                    <button
+                      onClick={() => changeHat(-1)}
+                      className="p-2 rounded-full bg-card/20 hover:bg-card"
+                      aria-label="Previous hat"
+                    >
+                      <ArrowLeft className="w-6 h-6" />
+                    </button>
+
+                    <img
+                      src={HAT_IMAGES[hatIndex].src}
+                      alt={HAT_IMAGES[hatIndex].label}
+                      className="w-24 h-24 object-contain mx-3"
+                    />
+
+                    <button
+                      onClick={() => changeHat(1)}
+                      className="p-2 rounded-full bg-card/20 hover:bg-card"
+                      aria-label="Next hat"
+                    >
+                      <ArrowRight className="w-6 h-6" />
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {HAT_IMAGES[hatIndex].label}
+                  </p>
                 </div>
               </div>
-
-              <Bandit
-                hatId={profile?.bandit_hat_id ?? "none"}
-                size="md"
-                className="mt-4"
-                showHatPicker
-                onHatChange={(hatId) => updateProfile.mutate({ bandit_hat_id: hatId })}
-              />
             </div>
 
             <div className="flex gap-2">
