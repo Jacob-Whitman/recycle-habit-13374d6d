@@ -1,22 +1,25 @@
+import { useState } from "react";
 import { useItemTypes, useUserItemRules, useProfile } from "@/hooks/useData";
 import { Button } from "@/components/ui/button";
-import { X, Plus, CheckCircle, AlertTriangle, Settings } from "lucide-react";
+import { X, Plus, Minus, CheckCircle, AlertTriangle, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
   itemId: string;
   onClose: () => void;
   onAddToBatch: (itemId: string) => void;
-  onMarkRecycled?: (itemId: string) => Promise<void>;
+  onMarkRecycled?: (itemId: string, quantity: number) => Promise<void>;
   isLogging?: boolean;
 }
+
+const MAX_QUANTITY = 999;
 
 export default function ItemGuidanceDrawer({ itemId, onClose, onAddToBatch, onMarkRecycled, isLogging }: Props) {
   const { data: itemTypes } = useItemTypes();
   const { rules, upsertRule } = useUserItemRules();
   const { profile } = useProfile();
   const navigate = useNavigate();
-
+  const [quantity, setQuantity] = useState(1);
   const item = itemTypes?.find((i) => i.id === itemId);
   const userRule = rules.find((r) => r.item_type_id === itemId);
   const rule = userRule?.rule ?? "not_sure";
@@ -47,7 +50,7 @@ export default function ItemGuidanceDrawer({ itemId, onClose, onAddToBatch, onMa
         return;
       }
     }
-    onMarkRecycled?.(itemId);
+    onMarkRecycled?.(itemId, quantity);
   };
 
   return (
@@ -123,14 +126,42 @@ export default function ItemGuidanceDrawer({ itemId, onClose, onAddToBatch, onMa
         {/* Actions */}
         <div className="space-y-2">
           {onMarkRecycled && (
-            <Button
-              onClick={handleMarkRecycled}
-              disabled={isLogging}
-              className="w-full font-heading font-bold gap-2 bg-primary"
-            >
-              <CheckCircle className="w-4 h-4" />
-              {isLogging ? "Saving…" : "Mark as recycled"}
-            </Button>
+            <>
+              <div className="flex items-center justify-between gap-3 rounded-xl bg-muted/50 px-3 py-2">
+                <span className="text-sm font-semibold">Number to mark:</span>
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </Button>
+                  <span className="min-w-[2.5rem] text-center font-bold tabular-nums">{quantity}</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))}
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              <Button
+                onClick={handleMarkRecycled}
+                disabled={isLogging}
+                className="w-full font-heading font-bold gap-2 bg-primary"
+              >
+                <CheckCircle className="w-4 h-4" />
+                {isLogging ? "Saving…" : `Mark ${quantity} as recycled`}
+              </Button>
+            </>
           )}
           <div className="flex gap-2">
             <Button onClick={handleAdd} variant={onMarkRecycled ? "outline" : "default"} className="flex-1 font-heading font-bold gap-1">

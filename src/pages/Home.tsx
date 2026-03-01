@@ -76,7 +76,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={`min-h-screen flex flex-col ${user ? "pb-20" : "pb-12"}`}>
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-eco px-4 pt-8 pb-12 text-primary-foreground">
         <img
@@ -160,7 +160,7 @@ export default function HomePage() {
       </section>
 
       {/* Why it matters */}
-      <section className="px-4 py-10 max-w-md mx-auto">
+      <section className="px-4 pt-10 pb-10 max-w-md mx-auto flex-1">
         <h2 className="font-heading text-xl font-bold text-center mb-6">Why It Matters</h2>
         <div className="grid gap-4">
           {WHY_IT_MATTERS.map((item) => (

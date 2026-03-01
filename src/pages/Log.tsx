@@ -79,11 +79,11 @@ export default function LogPage() {
     toast.success("Added to batch!");
   };
 
-  const handleMarkRecycled = async (itemId: string) => {
+  const handleMarkRecycled = async (itemId: string, quantity: number) => {
     try {
-      await logBatch.mutateAsync([{ itemTypeId: itemId, quantity: 1 }]);
+      await logBatch.mutateAsync([{ itemTypeId: itemId, quantity }]);
       setSelectedItem(null);
-      toast.success("Marked as recycled!");
+      toast.success(`Marked ${quantity} as recycled!`);
     } catch {
       toast.error("Failed to log");
     }
