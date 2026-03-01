@@ -54,7 +54,7 @@ export default function Bandit({ hatId = "none", size = "md", className = "", sh
             src={hat.src}
             alt=""
             role="presentation"
-            className={`absolute left-1/2 -translate-x-1/2 object-contain pointer-events-none ${HAT_OVERLAY_SIZE[size]} animate-bounce-in`}
+            className={`absolute left-1/2 -translate-x-1/2 object-contain pointer-events-none ${HAT_OVERLAY_SIZE[size]} ${hatId === "crown" ? "-translate-y-[25px]" : hatId !== "bandana" ? "-translate-y-5" : ""} animate-bounce-in`}
           />
         )}
       </div>
