@@ -97,10 +97,10 @@ export default function HomePage() {
             onHatChange={(hatId) => updateProfile.mutate({ bandit_hat_id: hatId })}
           />
 
-          <h1 className="font-heading text-3xl font-black mt-4 mb-2 drop-shadow">
+          <h1 className="font-heading text-3xl font-black mt-4 mb-2 drop-shadow text-black">
             Recycle with Bandit!
           </h1>
-          <p className="text-primary-foreground/80 text-sm font-medium mb-1">
+          <p className="text-sm font-medium mb-1 text-black">
             Log your recycling, track your impact, compete with friends.
           </p>
 
@@ -127,7 +127,7 @@ export default function HomePage() {
               </div>
               <Button
                 variant="ghost"
-                className="mt-3 text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 gap-2 text-sm"
+                className="mt-3 text-black hover:bg-black/10 gap-2 text-sm font-semibold"
                 onClick={() => setShowLogin(true)}
               >
                 <LogIn className="w-4 h-4" /> Already have an account? Log in
@@ -135,16 +135,16 @@ export default function HomePage() {
             </>
           ) : (
             <>
-              <div className="bg-primary-foreground/15 backdrop-blur-sm rounded-xl px-4 py-3 mt-4 inline-block">
-                <p className="text-xs font-semibold uppercase tracking-wide opacity-80">This Week</p>
-                <p className="text-4xl font-black">{weeklyTotal}</p>
-                <p className="text-xs opacity-80">items recycled</p>
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-3 mt-4 inline-block">
+                <p className="text-xs font-semibold uppercase tracking-wide text-black">This Week</p>
+                <p className="text-4xl font-black text-black">{weeklyTotal}</p>
+                <p className="text-xs text-black">items recycled</p>
               </div>
 
               <div className="flex gap-3 justify-center mt-6">
                 <Button
                   size="lg"
-                  variant="secondary"
+                  variant="default"
                   className="font-heading font-bold text-base shadow-warm gap-2"
                   onClick={() => handleNavWithAuth("/log")}
                 >
