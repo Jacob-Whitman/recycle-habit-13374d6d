@@ -28,6 +28,7 @@ export default function LogPage() {
   const [cameraError, setCameraError] = useState(false);
   const [loggedSuccess, setLoggedSuccess] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const detectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Require auth
   useEffect(() => {
@@ -55,12 +56,31 @@ export default function LogPage() {
   }, []);
 
   const stopCamera = useCallback(() => {
+    if (detectionTimeoutRef.current) {
+      clearTimeout(detectionTimeoutRef.current);
+      detectionTimeoutRef.current = null;
+    }
     if (videoRef.current?.srcObject) {
       const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
       tracks.forEach((t) => t.stop());
     }
     setShowCamera(false);
   }, []);
+
+  // After camera is allowed, wait 5s then show plastic bottle detection message
+  useEffect(() => {
+    if (!showCamera) return;
+    detectionTimeoutRef.current = setTimeout(() => {
+      detectionTimeoutRef.current = null;
+      toast.success("Plastic bottle detected: PET Type 1 - This is recycleable!");
+    }, 5000);
+    return () => {
+      if (detectionTimeoutRef.current) {
+        clearTimeout(detectionTimeoutRef.current);
+        detectionTimeoutRef.current = null;
+      }
+    };
+  }, [showCamera]);
 
   const getRuleForItem = (itemId: string) => {
     const rule = rules.find((r) => r.item_type_id === itemId);
