@@ -112,13 +112,13 @@ export default function HomePage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleContinue()}
-                  className="bg-primary-foreground/15 border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/60 max-w-xs mx-auto font-medium"
+                  className="bg-white/90 border-black/30 text-black placeholder:text-black/60 max-w-xs mx-auto font-medium"
                   maxLength={20}
                   aria-label="Choose a username"
                 />
                 <Button
                   size="lg"
-                  className="font-heading font-bold shadow-warm gap-2"
+                  className="font-heading font-bold shadow-warm gap-2 text-black"
                   onClick={handleContinue}
                   disabled={continuePending || !username.trim()}
                 >
