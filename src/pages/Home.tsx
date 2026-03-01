@@ -145,7 +145,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   variant="default"
-                  className="font-heading font-bold text-base shadow-warm gap-2"
+                  className="font-heading font-bold text-base shadow-warm gap-2 text-black"
                   onClick={() => handleNavWithAuth("/log")}
                 >
                   <Recycle className="w-5 h-5" /> Recycle

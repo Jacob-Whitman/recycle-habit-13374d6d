@@ -143,7 +143,7 @@ export default function LocalSetupPage() {
             <div className="bg-card rounded-xl p-4 flex items-start gap-3 cursor-pointer border border-transparent data-[state=checked]:border-primary mt-2">
               <RadioGroupItem value="double" id="double" className="mt-0.5" />
               <Label htmlFor="double" className="cursor-pointer">
-                <p className="font-bold text-sm">Double-Stream</p>
+                <p className="font-bold text-sm">Dual-Steam</p>
                 <p className="text-xs text-muted-foreground">Paper and containers go in separate bins</p>
               </Label>
             </div>
