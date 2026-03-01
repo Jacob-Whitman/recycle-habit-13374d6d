@@ -28,6 +28,7 @@ export default function LogPage() {
   const [cameraError, setCameraError] = useState(false);
   const [loggedSuccess, setLoggedSuccess] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const detectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Require auth
@@ -45,9 +46,7 @@ export default function LogPage() {
   const startCamera = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
+      streamRef.current = stream;
       setShowCamera(true);
     } catch {
       setCameraError(true);
@@ -60,12 +59,24 @@ export default function LogPage() {
       clearTimeout(detectionTimeoutRef.current);
       detectionTimeoutRef.current = null;
     }
-    if (videoRef.current?.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-      tracks.forEach((t) => t.stop());
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
     }
     setShowCamera(false);
   }, []);
+
+  // Attach stream to video once the element is mounted (so the feed displays)
+  useEffect(() => {
+    if (!showCamera || !videoRef.current || !streamRef.current) return;
+    const video = videoRef.current;
+    const stream = streamRef.current;
+    video.srcObject = stream;
+    video.play().catch(() => {});
+    return () => {
+      video.srcObject = null;
+    };
+  }, [showCamera]);
 
   // After camera is allowed, wait 5s then show plastic bottle detection message
   useEffect(() => {
@@ -183,7 +194,7 @@ export default function LogPage() {
         {/* Camera */}
         {showCamera && (
           <div className="relative rounded-xl overflow-hidden bg-foreground/5">
-            <video ref={videoRef} autoPlay playsInline className="w-full h-40 object-cover" />
+            <video ref={videoRef} autoPlay playsInline muted className="w-full h-40 object-cover" />
             <div className="absolute bottom-2 left-2 right-2 text-center text-xs text-primary-foreground bg-foreground/50 rounded-lg py-1">
               Camera preview (manual item selection below)
             </div>
