@@ -1,14 +1,19 @@
-import banditImg from "@/assets/bandit-raccoon.png";
+import banditImg from "@/art/bandit.png";
+import bandanaImg from "@/art/bandana.png";
+import beanieImg from "@/art/beanie.png";
+import cowboyImg from "@/art/cowboy.png";
+import crownImg from "@/art/crown.png";
 
-const HATS: Record<string, { label: string; emoji: string; cssStyle?: React.CSSProperties }> = {
-  none: { label: "No Hat", emoji: "" },
-  tophat: { label: "Top Hat", emoji: "🎩" },
-  party: { label: "Party Hat", emoji: "🥳" },
-  crown: { label: "Crown", emoji: "👑" },
-  cowboy: { label: "Cowboy", emoji: "🤠" },
-  wizard: { label: "Wizard Hat", emoji: "🧙" },
-  cap: { label: "Baseball Cap", emoji: "🧢" },
-  flower: { label: "Flower Crown", emoji: "🌸" },
+type HatEntry =
+  | { label: string; src: string }
+  | { label: string; src: null };
+
+const HATS: Record<string, HatEntry> = {
+  none: { label: "No Hat", src: null },
+  bandana: { label: "Bandana", src: bandanaImg },
+  beanie: { label: "Beanie", src: beanieImg },
+  cowboy: { label: "Cowboy", src: cowboyImg },
+  crown: { label: "Crown", src: crownImg },
 };
 
 interface BanditProps {
@@ -19,18 +24,17 @@ interface BanditProps {
   onHatChange?: (hatId: string) => void;
 }
 
+const HAT_OVERLAY_SIZE = {
+  sm: "w-10 h-10 -top-1",
+  md: "w-14 h-14 -top-2",
+  lg: "w-20 h-20 -top-3",
+};
+
 export default function Bandit({ hatId = "none", size = "md", className = "", showHatPicker = false, onHatChange }: BanditProps) {
   const sizeClasses = {
     sm: "w-16 h-16",
     md: "w-28 h-28",
     lg: "w-40 h-40",
-  };
-
-  const hatSizeClasses = {
-    sm: "text-xl -top-2",
-    md: "text-3xl -top-3",
-    // make the large hat sit slightly lower so it appears on his head
-    lg: "text-5xl -top-4",
   };
 
   const hat = HATS[hatId] || HATS.none;
@@ -43,31 +47,35 @@ export default function Bandit({ hatId = "none", size = "md", className = "", sh
           alt="Bandit the recycling raccoon"
           className={`${sizeClasses[size]} object-contain drop-shadow-lg`}
         />
-        {hat.emoji && (
-          <span
-            className={`absolute left-1/2 -translate-x-1/2 ${hatSizeClasses[size]} animate-bounce-in`}
-            style={hat.cssStyle}
-          >
-            {hat.emoji}
-          </span>
+        {hat.src && (
+          <img
+            src={hat.src}
+            alt=""
+            role="presentation"
+            className={`absolute left-1/2 -translate-x-1/2 object-contain pointer-events-none ${HAT_OVERLAY_SIZE[size]} animate-bounce-in`}
+          />
         )}
       </div>
 
       {showHatPicker && (
-        <div className="flex flex-wrap justify-center gap-1.5 max-w-[200px]">
+        <div className="flex flex-wrap justify-center gap-1.5 max-w-[220px]">
           {Object.entries(HATS).map(([id, h]) => (
             <button
               key={id}
               onClick={() => onHatChange?.(id)}
-              className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all
+              className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all overflow-hidden
                 ${hatId === id
-                  ? "bg-primary text-primary-foreground shadow-eco scale-110"
+                  ? "ring-2 ring-primary ring-offset-2 scale-110"
                   : "bg-card hover:bg-accent"
                 }`}
               aria-label={h.label}
               title={h.label}
             >
-              {h.emoji || "🚫"}
+              {h.src ? (
+                <img src={h.src} alt="" className="w-full h-full object-contain" />
+              ) : (
+                <span className="text-muted-foreground text-xs">None</span>
+              )}
             </button>
           ))}
         </div>
