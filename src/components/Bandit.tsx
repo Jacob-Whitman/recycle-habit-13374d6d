@@ -3,6 +3,7 @@ import bandanaImg from "@/art/bandana.png";
 import beanieImg from "@/art/beanie.png";
 import cowboyImg from "@/art/cowboy.png";
 import crownImg from "@/art/crown.png";
+import paperhatImg from "@/art/paperhat.png";
 
 type HatEntry =
   | { label: string; src: string }
@@ -14,6 +15,7 @@ const HATS: Record<string, HatEntry> = {
   beanie: { label: "Beanie", src: beanieImg },
   cowboy: { label: "Cowboy", src: cowboyImg },
   crown: { label: "Crown", src: crownImg },
+  paperhat: { label: "Paper Hat", src: paperhatImg },
 };
 
 interface BanditProps {
