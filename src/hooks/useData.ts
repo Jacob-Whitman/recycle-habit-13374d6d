@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { toast } from "sonner";
 
 export function useProfile() {
   const { user } = useAuth();
@@ -128,9 +129,24 @@ export function useLogEntries() {
       const { error } = await supabase.from("log_entries").insert(entries);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["log_entries"] });
+      queryClient.invalidateQueries({ queryKey: ["log_entries_lifetime"] });
       queryClient.invalidateQueries({ queryKey: ["weekly_total"] });
+      // If user has 100+ lifetime items, try to claim Solana reward (idempotent)
+      try {
+        const { data, error } = await supabase.functions.invoke<{
+          success?: boolean;
+          claimed?: boolean;
+          error?: string;
+          message?: string;
+        }>("send_sol_reward");
+        if (!error && data?.success) {
+          toast.success("You hit 100 recycled! 5 testnet SOL sent to the reward wallet.");
+        }
+      } catch {
+        // ignore (reward is optional)
+      }
     },
   });
 
