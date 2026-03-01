@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 export default function StatsPage() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { profile, updateProfile } = useProfile();
+  const { profile } = useProfile();
   const { weeklyTotal } = useLogEntries();
   const { lifetimeTotal } = useLifetimeEntries();
   const { accepted, pendingIncoming, sendRequest, respondToRequest } = useFriends();
@@ -92,7 +92,7 @@ export default function StatsPage() {
           </TabsList>
 
           <TabsContent value="stats" className="mt-4 space-y-4">
-            {/* Personal stats: username, rolling 7-day, lifetime, Bandit */}
+            {/* Personal stats: username, rolling 7-day, lifetime */}
             <div className="bg-card rounded-2xl p-5 text-center shadow-sm">
               <h2 className="font-heading text-lg font-bold">{profile?.display_name ?? "Recycler"}</h2>
               <p className="text-xs text-muted-foreground">{profile?.location_label}</p>
@@ -107,14 +107,6 @@ export default function StatsPage() {
                   <p className="text-[10px] text-muted-foreground font-semibold">Lifetime</p>
                 </div>
               </div>
-
-              <Bandit
-                hatId={profile?.bandit_hat_id ?? "none"}
-                size="md"
-                className="mt-4"
-                showHatPicker
-                onHatChange={(hatId) => updateProfile.mutate({ bandit_hat_id: hatId })}
-              />
             </div>
 
             <div className="flex gap-2">

@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Recycle, BarChart3, LogIn } from "lucide-react";
-import heroBg from "@/art/collage_home.png";
+import homeCollage from "@/art/home_collage.png";
 import { toast } from "sonner";
 
 const WHY_IT_MATTERS = [
@@ -76,14 +76,16 @@ export default function HomePage() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col ${user ? "pb-20" : "pb-12"}`}>
+    <div className={`min-h-screen flex flex-col relative ${user ? "pb-20" : "pb-12"}`}>
+      {/* Full-page background */}
+      <div
+        className="fixed inset-0 -z-10 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${homeCollage})` }}
+        aria-hidden
+      />
+      <div className="fixed inset-0 -z-[9] bg-background/70" aria-hidden />
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-eco px-4 pt-8 pb-12 text-primary-foreground">
-        <img
-          src={heroBg}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover mix-blend-overlay"
-        />
+      <section className="relative overflow-hidden bg-gradient-eco/90 px-4 pt-8 pb-12 text-primary-foreground">
         <div className="relative z-10 max-w-md mx-auto text-center">
           <Bandit
             hatId={profile?.bandit_hat_id ?? "none"}
