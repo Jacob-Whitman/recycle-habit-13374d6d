@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Bandit from "@/components/Bandit";
+import banditThumbsUp from "@/art/bandit_thumbsup.png";
 import { BottomNav } from "@/pages/Home";
 import { Copy, UserPlus, Check, X, Settings, LogOut, ArrowLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -94,6 +95,7 @@ export default function StatsPage() {
           <TabsContent value="stats" className="mt-4 space-y-4">
             {/* Personal stats: username, rolling 7-day, lifetime */}
             <div className="bg-card rounded-2xl p-5 text-center shadow-sm">
+              <img src={banditThumbsUp} alt="" className="mx-auto h-24 w-auto object-contain mb-3" aria-hidden />
               <h2 className="font-heading text-lg font-bold">{profile?.display_name ?? "Recycler"}</h2>
               <p className="text-xs text-muted-foreground">{profile?.location_label}</p>
 
