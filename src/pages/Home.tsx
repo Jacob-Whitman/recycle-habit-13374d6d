@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Recycle, BarChart3, LogIn } from "lucide-react";
-import heroBg from "@/art/collage_home.png";
+import heroBg from "@/art/home_collage.png";
 import { toast } from "sonner";
 
 const WHY_IT_MATTERS = [
