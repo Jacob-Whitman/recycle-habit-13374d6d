@@ -16,6 +16,9 @@ import {
 } from "@/components/ui/dialog";
 import { Recycle, BarChart3, LogIn } from "lucide-react";
 import homeCollage from "@/art/home_collage.png";
+import homeIcon from "@/art/home.png";
+import recyclingIcon from "@/art/recycling.png";
+import statsIcon from "@/art/stats.png";
 import { toast } from "sonner";
 
 const WHY_IT_MATTERS = [
@@ -238,9 +241,9 @@ export function BottomNav() {
   const location = window.location.pathname;
 
   const items = [
-    { path: "/", label: "Home", icon: "🏠" },
-    { path: "/log", label: "Recycle", icon: "♻️" },
-    { path: "/stats", label: "Stats", icon: "📊" },
+    { path: "/", label: "Home", src: homeIcon },
+    { path: "/log", label: "Recycle", src: recyclingIcon },
+    { path: "/stats", label: "Stats", src: statsIcon },
   ];
 
   return (
@@ -257,7 +260,7 @@ export function BottomNav() {
             }`}
             aria-label={item.label}
           >
-            <span className="text-xl">{item.icon}</span>
+            <img src={item.src} alt="" className="w-6 h-6 object-contain" aria-hidden />
             <span className="text-[10px] font-semibold">{item.label}</span>
           </button>
         ))}
