@@ -110,10 +110,10 @@ export default function StatsPage() {
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1 text-xs gap-1" onClick={() => navigate("/setup")}>
+              <Button variant="default" className="flex-1 text-xs gap-1" onClick={() => navigate("/setup")}>
                 <Settings className="w-3.5 h-3.5" /> Edit Local Guidance
               </Button>
-              <Button variant="outline" className="text-xs text-destructive gap-1" onClick={handleDeleteAccount}>
+              <Button variant="default" className="text-xs gap-1" onClick={handleDeleteAccount}>
                 <Trash2 className="w-3.5 h-3.5" /> Delete Account
               </Button>
             </div>

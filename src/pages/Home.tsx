@@ -152,8 +152,8 @@ export default function HomePage() {
                 </Button>
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="font-heading font-bold text-base bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 gap-2"
+                  variant="secondary"
+                  className="font-heading font-bold text-base shadow-warm gap-2"
                   onClick={() => handleNavWithAuth("/stats")}
                 >
                   <BarChart3 className="w-5 h-5" /> Stats
