@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Recycle, BarChart3, LogIn } from "lucide-react";
-import heroBg from "@/assets/hero-bg.png";
+import heroBg from "@/art/collage_home.png";
 import { toast } from "sonner";
 
 const WHY_IT_MATTERS = [
@@ -82,7 +82,7 @@ export default function HomePage() {
         <img
           src={heroBg}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay"
+          className="absolute inset-0 w-full h-full object-cover mix-blend-overlay"
         />
         <div className="relative z-10 max-w-md mx-auto text-center">
           <Bandit
@@ -214,7 +214,7 @@ export default function HomePage() {
               autoComplete="username"
             />
             <Input
-              placeholder="Login code (e.g. Sun-leaf-42!)"
+              placeholder="Login code (e.g. sun-leaf-42)"
               value={loginCode}
               onChange={(e) => setLoginCode(e.target.value)}
               type="password"
